@@ -9,15 +9,16 @@ program
 
 program.parse(process.argv);
 
-// Debugging: print the arguments received
-console.log('Arguments received:', program.opts());
+const options = program.opts(); 
 
-if (!program.input) {
+console.log('Arguments received:', options);
+
+if (!options.input) {
   console.error('Please, specify input file');
   process.exit(1);
 }
 
-fs.readFile(program.input, 'utf8', (err, data) => {
+fs.readFile(options.input, 'utf8', (err, data) => {
   if (err) {
     console.error('Cannot find input file');
     process.exit(1);
@@ -31,17 +32,17 @@ fs.readFile(program.input, 'utf8', (err, data) => {
     process.exit(1);
   }
 
-  if (program.display) {
+  if (options.display) {
     console.log('Displaying data:', jsonData);
   }
 
-  if (program.output) {
-    fs.writeFile(program.output, JSON.stringify(jsonData, null, 2), (err) => {
+  if (options.output) {
+    fs.writeFile(options.output, JSON.stringify(jsonData, null, 2), (err) => {
       if (err) {
         console.error('Error writing to output file');
         process.exit(1);
       }
-      console.log(`Data has been written to ${program.output}`);
+      console.log(`Data has been written to ${options.output}`);
     });
   }
 });

@@ -8,35 +8,40 @@ program
   .option('-d, --display', 'Display the result in the console');
 
 program.parse(process.argv);
-
-if (!program.input) {
-  console.error('Please, specify input file');
-  process.exit(1);
-}
+const options = program.opts();
 
 try {
-  const data = fs.readFileSync(program.input, 'utf8');
+  const data = fs.readFileSync(options.input, 'utf8');
   const jsonData = JSON.parse(data);
 
-  if (jsonData && jsonData.length > 0) {
-    jsonData.forEach(item => {
-      if (item.currency && item.date && item.rate) {
-        console.log(`${item.date}:${item.rate}`);
-        
-        if (program.output) {
-          fs.writeFileSync(program.output, `${item.date}:${item.rate}\n`, { flag: 'a' });
-        }
-      }
-    });
-  } else {
-    console.error('Invalid JSON structure or no data found.');
+  if (!Array.isArray(jsonData)) {
+    console.error('JSON is not an array of currency rates.');
+    process.exit(1);
   }
 
-  if (program.display) {
-    console.log('Displayed the results.');
+  const results = [];
+
+  jsonData.forEach(item => {
+    if (item.exchangedate && item.rate) {
+      results.push(`${item.exchangedate}:${item.rate}`);
+    }
+  });
+
+  if (results.length === 0) {
+    console.log('No valid currency records found.');
+    process.exit(0);
+  }
+
+  if (options.display) {
+    results.forEach(line => console.log(line));
+  }
+
+  if (options.output) {
+    fs.writeFileSync(options.output, results.join('\n') + '\n');
+    console.log(`Results saved to ${options.output}`);
   }
 
 } catch (err) {
-  console.error('Cannot find input file or error parsing JSON:', err.message);
+  console.error('Error:', err.message);
   process.exit(1);
 }
